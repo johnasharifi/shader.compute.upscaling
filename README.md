@@ -6,11 +6,7 @@ Compute shader for creating small perlin landscapes and upscaling them from a lo
 
 Perlin landscapes are a (Perlin-)weighted admixture of a higher-frequency Perlin sample, and a lower-frequency Perlin sample. This weighted mixture is projected through a radius mask (to enclose landmass within a circle) and a Perlin mask (to introduce curvature).
 
-But here we should also showcase a texture upsampling algorithm. It projects a sample from 
-64 x 64, to 
-128 x 128, to 
-256 x 256... etc. to 
-4096 x 4096. With an image created on the fly, almost instantly. This upsampling algorithm does require a GPU.
+But here we should also showcase a texture upsampling algorithm. It projects a sample from 64 x 64, to 128 x 128, to 256 x 256... etc. to 4096 x 4096. With an image created on the fly, almost instantly. This upsampling algorithm does require a GPU.
 
 Open one of the links to image_1, image_2, or image_3. This will open a github webpage which has an image embedded in it. Right-click the image, select "Open image in new tab," zoom in, and see the image's full detail.
 
