@@ -24,10 +24,11 @@ public class ScriptComputeManager : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update() {
-		if (Input.GetKeyDown(KeyCode.A) && tex_dim < tex_dim_max)
-			PropagateCS();
 		if (Input.GetKeyDown(KeyCode.A) && tex_dim >= tex_dim_max)
 			Debug.Log("Texture too big");
+		if (Input.GetKeyDown(KeyCode.A) && tex_dim < tex_dim_max)
+			PropagateCS();
+
 		if (Input.GetKeyDown(KeyCode.S))
 			BlurCS();
 		if (Input.GetKeyDown(KeyCode.D))
@@ -109,7 +110,7 @@ public class ScriptComputeManager : MonoBehaviour {
 		tex.ReadPixels(new Rect(0, 0, in_tex.width, in_tex.height), 0, 0);
 		tex.Apply();
 
-		File.WriteAllBytes(Application.dataPath + "/../terrain" + tex_dim.ToString() + ".png", tex.EncodeToPNG());
+		File.WriteAllBytes(Application.dataPath + "/../" + gameObject.name + "_" + tex_dim.ToString() + ".png", tex.EncodeToPNG());
 
 		RenderTexture.active = active;
 	}
@@ -138,9 +139,9 @@ internal static class PerlinMap {
 		const float mask_threshold = 0.2f;
 
 		float[,] pmask = GetPerlin(xdim, zdim, perlin_alpha: 5.01f);
-		float[,] p0 = GetPerlin(xdim, zdim, perlin_alpha: 10.93f);
-		float[,] p1 = GetPerlin(xdim, zdim, perlin_alpha: 6.97f);
-		float[,] p2 = GetPerlin(xdim, zdim, perlin_alpha: 3.97f);
+		float[,] p0 = GetPerlin(xdim, zdim, perlin_alpha: 6.93f);
+		float[,] p1 = GetPerlin(xdim, zdim, perlin_alpha: 4.97f);
+		float[,] p2 = GetPerlin(xdim, zdim, perlin_alpha: 2.97f);
 		float[,] w = GetPerlin(xdim, zdim, perlin_alpha: 12.36f);
 
 		for (int i = 0; i < map.GetLength(0); i++) {
@@ -171,7 +172,7 @@ internal static class PerlinMap {
 
 		for (int i = 0; i < map.GetLength(0); i++) {
 			for (int j = 0; j < map.GetLength(1); j++) {
-				int ind = Mathf.FloorToInt(map[i, j] * colors.Count);
+				int ind = Mathf.Clamp(Mathf.FloorToInt(map[i, j] * colors.Count), 0, colors.Count - 1);
 				int ind2 = Mathf.Clamp(ind + 1, 0, colors.Count - 1);
 				float alpha = (map[i, j] * colors.Count) % 1;
 				// tex.SetPixel(i, j, Color.Lerp(colors[ind], colors[ind2], alpha));
