@@ -138,16 +138,17 @@ internal static class PerlinMap {
 		const float mask_min = 0.01f;
 		const float mask_threshold = 0.2f;
 
-		float[,] pmask = GetPerlin(xdim, zdim, perlin_alpha: 5.01f);
-		float[,] p0 = GetPerlin(xdim, zdim, perlin_alpha: 6.93f);
-		float[,] p1 = GetPerlin(xdim, zdim, perlin_alpha: 4.97f);
-		float[,] p2 = GetPerlin(xdim, zdim, perlin_alpha: 2.97f);
+		float[,] pmask = GetPerlin(xdim, zdim, perlin_alpha: 4.01f);
+		float[,] p0 = GetPerlin(xdim, zdim, perlin_alpha: 3.93f);
+		float[,] p1 = GetPerlin(xdim, zdim, perlin_alpha: 2.97f);
+		float[,] p2 = GetPerlin(xdim, zdim, perlin_alpha: 1.97f);
 		float[,] w = GetPerlin(xdim, zdim, perlin_alpha: 12.36f);
 
 		for (int i = 0; i < map.GetLength(0); i++) {
 			for (int j = 0; j < map.GetLength(1); j++) {
 				float mask = (Mathf.Sin(i * 3.14f / xdim) * Mathf.Sin(j * 3.14f / zdim) > mask_threshold) ? mask_max : mask_min;
-				float perlin_mask = (0.3f > pmask[i, j] || 0.5f < pmask[i,j]) ? mask_max : mask_min;
+				// float perlin_mask = (0.3f > pmask[i, j] || 0.5f < pmask[i,j]) ? mask_max : mask_min;
+				float perlin_mask = (0.3f > pmask[i, j] || 0.5f < pmask[i, j]) ? mask_max : mask_min;
 				float w_inst = w[i, j];
 				float w_conj = (1 - w[i, j]) / 2;
 

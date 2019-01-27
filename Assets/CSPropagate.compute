@@ -65,11 +65,14 @@ void CSPropagate(uint3 id: SV_DispatchThreadID)
 
 [numthreads(32, 32, 1)]
 void CSBlur(uint3 id: SV_DispatchThreadID) {
-	
-	int b = rand_binary_both(id.xy);
-	int ind_open = rand_binary_pos(id.yx);
-	int ind_closed = 1 - ind_open;
+	// if x + 1, y == x, y + 1
+	// then pixel = x + 1, y
 
-	uint2 target_ind = uint2(id.x + smaller_dim + b * ind_open, id.y + smaller_dim + b * ind_closed) % smaller_dim;
-	in_tex[id.xy] = (0.9 * in_tex[id.xy] + 0.1 * in_tex[target_ind]);
+	uint b = rand_binary_both(id.xy + uint2(93.43, 74.54));
+
+	float4 cx = in_tex[uint2(id.x + b + smaller_dim, id.y) % smaller_dim];
+	float4 cy = in_tex[uint2(id.x, id.y + b + smaller_dim) % smaller_dim];
+
+	if (distance(cx, cy) < 0.1)
+		in_tex[id.xy] = cx;
 }
