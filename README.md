@@ -27,7 +27,7 @@ to determine how to fill in a pixel in the (2N, 2N) image.
 * Option 1: Download shader.compute.upscaling.unitypackage and run the unitypackage with Unity.
 * Option 2: Create a new Unity project, overwrite the Assets and ProjectSettings files into your new Unity project, and run the Sample Scene.
 * Option 3: 
- * Download the Assets/CSPropagate.compute and Assets/ScriptComputeManager files into your Assets folder
- * create a Plane object in Unity, attach the ScriptComputeManager to your Plane
- * Fill a few colors into map_colors, and point the "cs" variable to CSPropagate.compute
- * Run the scene.
+    * Download the Assets/CSPropagate.compute and Assets/ScriptComputeManager files into your Assets folder
+    * create a Plane object in Unity, attach the ScriptComputeManager to your Plane
+    * Fill a few colors into map_colors, and point the "cs" variable to CSPropagate.compute
+    * Run the scene.
