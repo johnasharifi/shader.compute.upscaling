@@ -1,0 +1,75 @@
+﻿int smaller_dim;
+int shader_pixel_types;
+Texture2D start_tex;
+Texture2D shader_defs;
+RWTexture2D<float4> in_tex;
+RWTexture2D<float4> out_tex;
+
+// not sure who came up with this pseudorandom process... famous 
+float rand_1_05(in float2 uv) {
+	float2 noise = (frac(sin(dot(uv, float2(12.9898, 78.233)*2.0)) * 43758.5453));
+	return abs(noise.x + noise.y) * 0.5;
+	}
+
+uint rand_binary_pos(in float2 uv) {
+	return(rand_1_05(uv) < 0.5? 0 : 1);
+	}
+
+uint rand_binary_neg(in float2 uv) {
+	return(rand_1_05(uv) < 0.5 ? -1 : 0);
+}
+
+int rand_binary_both(in float2 uv) {
+	return(rand_1_05(uv) < 0.5 ? -1 : 1);
+}
+
+#pragma kernel CSLoad
+
+[numthreads(32,32,1)]
+void CSLoad (uint3 id : SV_DispatchThreadID)
+{
+	// write data from Texture2D start_tex into RenderTexture in_tex
+	in_tex[id.xy] = start_tex[id.xy];
+}
+
+#pragma kernel CSPropagate
+
+[numthreads(32, 32, 1)]
+void CSPropagate(uint3 id: SV_DispatchThreadID) 
+{
+	// writing from RenderTexture in_tex to RenderTexture out_tex
+	uint2 ind1 = uint2(id.x * 2 + 0, id.y * 2 + 0);
+	uint2 ind2 = uint2(id.x * 2 + 1, id.y * 2 + 0);
+	uint2 ind3 = uint2(id.x * 2 + 0, id.y * 2 + 1);
+	uint2 ind4 = uint2(id.x * 2 + 1, id.y * 2 + 1);
+
+	uint which_ind = rand_binary_pos(id.xy);
+
+	int b1 = rand_binary_neg(id.xy + uint2(9.34, 5.67));
+	int b2 = rand_binary_neg(id.xy + uint2(5.68, 3.42));
+	int b3 = rand_binary_pos(id.xy + uint2(3.44, 1.96));
+	int b4 = rand_binary_pos(id.xy + uint2(8.44, 2.74));
+
+	uint2 id1 = uint2(id.x + smaller_dim + b1 * (0 + which_ind), id.y + smaller_dim + b2 * (1 - which_ind)) % smaller_dim; // --
+	uint2 id2 = uint2(id.x + smaller_dim + b3 * (0 + which_ind), id.y + smaller_dim + b2 * (1 - which_ind)) % smaller_dim; // +-
+	uint2 id3 = uint2(id.x + smaller_dim + b1 * (0 + which_ind), id.y + smaller_dim + b4 * (1 - which_ind)) % smaller_dim; // -+
+	uint2 id4 = uint2(id.x + smaller_dim + b3 * (0 + which_ind), id.y + smaller_dim + b4 * (1 - which_ind)) % smaller_dim; // ++
+
+	out_tex[ind1] = in_tex[id1];
+	out_tex[ind2] = in_tex[id2];
+	out_tex[ind3] = in_tex[id3];
+	out_tex[ind4] = in_tex[id4];
+}
+
+#pragma kernel CSBlur
+
+[numthreads(32, 32, 1)]
+void CSBlur(uint3 id: SV_DispatchThreadID) {
+	
+	int b = rand_binary_both(id.xy);
+	int ind_open = rand_binary_pos(id.yx);
+	int ind_closed = 1 - ind_open;
+
+	uint2 target_ind = uint2(id.x + smaller_dim + b * ind_open, id.y + smaller_dim + b * ind_closed) % smaller_dim;
+	in_tex[id.xy] = (0.9 * in_tex[id.xy] + 0.1 * in_tex[target_ind]);
+}
