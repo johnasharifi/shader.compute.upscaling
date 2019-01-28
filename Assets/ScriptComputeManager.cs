@@ -36,9 +36,7 @@ public class ScriptComputeManager : MonoBehaviour {
 	}
 
 	void BootCS() {
-		const int thread_dim = 32;
-
-		// write data into a Texture2D, because Texture2D is a nuisance to write into
+		// write data into a Texture2D, because RenderTexture is a nuisance to write into
 
 		Texture2D start_tex = GetComponent<Renderer>().material.mainTexture as Texture2D;
 		if (start_tex != null)
@@ -52,7 +50,7 @@ public class ScriptComputeManager : MonoBehaviour {
 		in_tex = new RenderTexture(tex_dim, tex_dim, 1) { enableRandomWrite = true, filterMode = FilterMode.Point };
 		in_tex.Create();
 
-		// CSLoad writes data from Texture2D "start_tex" into Texture2D "in_tex"
+		// CSLoad writes data from Texture2D "start_tex" into RenderTexture "in_tex"
 		int kernel_ind = cs.FindKernel("CSLoad");
 		cs.SetInt("smaller_dim", tex_dim);
 		cs.SetTexture(kernel_ind, "start_tex", start_tex);
