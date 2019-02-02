@@ -35,16 +35,18 @@ public class ScriptComputeManager : MonoBehaviour {
 			WriteTexture();
 	}
 
+	/// <summary>
+	/// Boots up kernel, writes data into compute shader
+	/// </summary>
 	void BootCS() {
 		const int thread_dim = 32;
 
-		// write data into a Texture2D, because Texture2D is a nuisance to write into
+		// write data into a Texture2D, because RenderTexture is a nuisance to write into
 
 		Texture2D start_tex = GetComponent<Renderer>().material.mainTexture as Texture2D;
 		if (start_tex != null)
 			tex_dim = Mathf.Min(start_tex.width, start_tex.height);
 		if (start_tex == null) {
-			// float[,] h = PerlinMap.GetPerlin(tex_dim, tex_dim, perlin_alpha: 9.97f);
 			float[,] h = PerlinMap.GetTerrain(tex_dim, tex_dim);
 			start_tex = PerlinMap.MapToTex(ref h, ref map_colors);
 		}
@@ -52,7 +54,7 @@ public class ScriptComputeManager : MonoBehaviour {
 		in_tex = new RenderTexture(tex_dim, tex_dim, 1) { enableRandomWrite = true, filterMode = FilterMode.Point };
 		in_tex.Create();
 
-		// CSLoad writes data from Texture2D "start_tex" into Texture2D "in_tex"
+		// CSLoad writes data from Texture2D "start_tex" into RenderTexture "in_tex"
 		int kernel_ind = cs.FindKernel("CSLoad");
 		cs.SetInt("smaller_dim", tex_dim);
 		cs.SetTexture(kernel_ind, "start_tex", start_tex);
@@ -63,6 +65,9 @@ public class ScriptComputeManager : MonoBehaviour {
 		GetComponent<Renderer>().material.mainTexture = in_tex;
 	}
 
+	/// <summary>
+	/// Projects n x n texture into 2n x 2n dimensions, fills in 3 new cells for each 1 original cell
+	/// </summary>
 	[ContextMenu("Propagate texture")]
 	void PropagateCS() {
 		GameObject prev = GameObject.CreatePrimitive(PrimitiveType.Plane);
@@ -91,7 +96,10 @@ public class ScriptComputeManager : MonoBehaviour {
 
 		gameObject.GetComponent<Renderer>().material.mainTexture = in_tex;
 	}
-
+	
+	/// <summary>
+	/// Samples 2 of 4 adjacent non-diagonal cells in texture. Takes median of those 3 cells
+	/// </summary>
 	[ContextMenu("Blur texture")]
 	void BlurCS() {
 		int kernel_ind_blur = cs.FindKernel("CSBlur");
@@ -100,6 +108,9 @@ public class ScriptComputeManager : MonoBehaviour {
 		cs.Dispatch(kernel_ind_blur, tex_dim / thread_dim, tex_dim / thread_dim, 1);
 	}
 
+	/// <summary>
+	/// Saves texture as a png in parent directory
+	/// </summary>
 	[ContextMenu("Write texture")]
 	void WriteTexture() {
 		RenderTexture active = RenderTexture.active;
@@ -147,12 +158,11 @@ internal static class PerlinMap {
 		for (int i = 0; i < map.GetLength(0); i++) {
 			for (int j = 0; j < map.GetLength(1); j++) {
 				float mask = (Mathf.Sin(i * 3.14f / xdim) * Mathf.Sin(j * 3.14f / zdim) > mask_threshold) ? mask_max : mask_min;
-				// float perlin_mask = (0.3f > pmask[i, j] || 0.5f < pmask[i,j]) ? mask_max : mask_min;
-				float perlin_mask = (0.3f > pmask[i, j] || 0.5f < pmask[i, j]) ? mask_max : mask_min;
+				float perlin_mask = (0.3f > pmask[i, j] || 0.5f < pmask[i,j]) ? mask_max : mask_min;
 				float w_inst = w[i, j];
 				float w_conj = (1 - w[i, j]) / 2;
 
-				map[i, j] = mask * perlin_mask * (w_inst * p0[i, j] + w_conj * p1[i, j] + w_conj * p2[i,j]);
+				map[i,j] = mask * perlin_mask * (w_inst * p0[i, j] + w_conj * p1[i, j] + w_conj * p2[i, j]);
 			}
 		}
 		return (map);

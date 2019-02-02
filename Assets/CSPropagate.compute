@@ -1,7 +1,5 @@
 ﻿int smaller_dim;
-int shader_pixel_types;
 Texture2D start_tex;
-Texture2D shader_defs;
 RWTexture2D<float4> in_tex;
 RWTexture2D<float4> out_tex;
 
